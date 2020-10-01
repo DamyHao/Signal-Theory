@@ -4,7 +4,6 @@
 
 clear all;
 clc;
-close all;
 
 a=[1 -7/8 3/32];
 b=[1 -2/3];
@@ -22,13 +21,10 @@ end
 
  figure();
  %Per valors discrets
-stem(1:10,x,'-o')
+stem(1:10,z,'-o')
 grid on
 
-figure();
-stem(1:10,z,'-o');
-figure();
- stem(1:10,z2,'-o');
+ 
  
 
 function out = delta(in)
