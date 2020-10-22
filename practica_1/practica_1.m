@@ -14,6 +14,7 @@ for k = 0:N-1
     x(k+1)=delta(k)-2*delta(k-1)+4*delta(k-2);
 end
 
+
  y = iir_fd1(a, b, x, N);
  z = iir_fd1M(a, b, x, N);
  z2 = iir_fd2M(a, b, x, N);
@@ -27,9 +28,9 @@ grid on
 
 figure();
 stem(1:10,z,'-o');
-figure();
+hold on;
  stem(1:10,z2,'-o');
- 
+hold off; 
 
 function out = delta(in)
 out = 0;
@@ -38,34 +39,34 @@ if(in == 0)
 end
 end
 
-% Fem la funcio per qualsevol llargada dels vectors:
-function y = iir_fd1(a, b, x, N)
-% INPUT: N es longitud del vector.
-lengthA = length(a);
-lengthB = length(b);
-sum = 0;
 
-y = zeros( 1, N);
+% Ens serveix per calcular la sortida de un sistema discret LTI. Es a dir
+% un sistema format per derivades multiplicades per coeficients. Com que el
+% sistema es discret, el sistema de equacions diferencials passa a ser finite
+% differences equation
+            function y = iir_fd1(a, b, x, N)
+            % INPUT: N es longitud del vector.
+            %   a i b coeficients de qualsevol llargada.
+            lengthA = length(a);
+            lengthB = length(b);
+            y = zeros(1, N);
 
-% calculant en punt n
-for n = 1:N
-    for it = 0:(lengthA-1)
-        if (n-it) > 0
-            sum = sum + x(n-it)*a(it+1);
-        end
-    end
-    
-    sum2 = 0;
-    %Comença al 1 perq no tenim acces a
-    for itt = 1:lengthB
-        if (n-it) > 1
-            sum2 = sum2 + y(n-it)*b(it);
-        end
-    end
-    y(n) = sum - sum2;
-end
-
-end
+            for n = 1:N
+                sum = 0;
+                for it = 0:lengthB-1
+                    if (n-it) > 0
+                        sum = sum + x(n-it)*b(it+1);
+                    end
+                end
+                sum2 = 0;
+                for itt = 1:lengthA-1
+                    if (n-itt) > 0
+                        sum2 = sum2 + y(n-itt)*a(itt+1); %No s'accedeix mai a la primera posicio de a
+                    end
+                end
+                y(n) = sum - sum2;
+            end
+            end
 
 function y=iir_fd1M(a,b,x,N)
 y(1)=b(1)*x(1);

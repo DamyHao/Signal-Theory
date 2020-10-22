@@ -1,0 +1,9 @@
+clear all
+close all
+
+y = cos((2*pi/(4))*[0:20]);
+
+
+stem(abs(fft(y)))
+
+stem(abs(fft(y,40)))
