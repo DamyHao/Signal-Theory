@@ -52,6 +52,7 @@ y1=conv(x,h);
 y2=process(x,h,N(3));
 
  error = abs(y1-y2);
+ plot(1:10000999, error)
  max(error)
 
 

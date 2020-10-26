@@ -1,0 +1,16 @@
+function yb=cc(xb,H) %Convolucio del bloc N=Lh+Lx-1
+% Circular convolution. Helper de process.
+% Input:
+%   v
+%   H: Fourier transform de respota impulsional h(n). Ha de ser allargat
+%   amb 0s fins N
+% Outputs:
+%   v: matriu amb els punts com a columnes
+
+N=length(H);
+Lx=length(xb);
+xb=[xb zeros(1,N-Lx)]; % Fem el vector més llarg
+X=fft(xb,N); % Fast Fourier trransform
+Y=X.*H;
+yb=ifft(Y,N); %La inversa de la fft tornara el producte circular. Si 
+end
