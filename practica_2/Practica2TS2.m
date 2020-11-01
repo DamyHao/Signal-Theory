@@ -6,40 +6,46 @@ clear all;
 clc
 close all;
 % 2.6)
-k0=3; N=16;
+k0=3; N=32;
 Omega=2*pi*(k0/N);
-
-f=@(n) [cos(Omega*n)];
-y=f([0:52]);
-
+phi = pi/4;
+f=@(n)(cos(Omega*n + phi));
+y=f([0:64]);
+% Recordar que k va de 0 a N-1
 v=fft(y,N);
 
 figure(1)
-stem(y)
+stem( y)
 grid on
 title("Senyal")
+print('./eps/primerDibSenyal','-depsc','-tiff')
 count = 1;
 XN = zeros(1, N);
 
 funcio = @(k)(0.5*((1-(exp(1i*2*(pi/N)*(k0-k)) + exp(-1i*2*(pi/N)*(k0+k))).^(N-1))./( 1- (exp(1i*2*(pi/N)*(k0-k)) + exp(-1i*2*(pi/N)*(k0+k))))));
 
 for k=0:N
-    a=(1-exp(1i*2*pi*(k0-k)))/(1-exp(1i*2*(pi/N)*(k0-k)));
-    b=(1-exp(-1i*2*pi*(k0+k)))/(1-exp(-1i*2*(pi/N)*(k0+k)));
-    XN(count)=0.5*(a+b);
+    %a=(1-exp(1i*2*pi*(k0-k)))/(1-exp(1i*2*(pi/N)*(k0-k)));
+    %b=(1-exp(-1i*2*pi*(k0+k)))/(1-exp(-1i*2*(pi/N)*(k0+k)));
+    XN(count)=cosDFT(k, k0, N, phi);
     count = count + 1;
 end
 ks=0:N;
-XN = funcio(ks);
 
 figure(2)
-stem(abs(v))
+stem([0:N-1] ,abs(v))
 grid on
-title("Amb fft")
+title("Amb fft de matlab")
+ylabel('Valor absolut')
+xlabel('k')
+print('./eps/ambNostre','-depsc','-tiff')
 figure(3)
-stem(abs(XN))
+stem([0:N], abs(XN))
 grid on
 title("Amb formula trobada")
+ylabel('Valor absolut')
+xlabel('k')
+print('./eps/ambNostre','-depsc','-tiff')
 
 
 %%
@@ -68,7 +74,7 @@ grid on
 hold on
 plot([10:20],tlist2)
 xlabel("\nu")
-ylabel("Durada de computació en segons")
+ylabel("s")
 title("Comparació de la durada de computació")
 legend("conv()", "process()", "Location", "best")
 print('./eps/durada12','-depsc','-tiff')
@@ -100,6 +106,7 @@ print -deps aprox23
 
 clear all
 clc
+close all
 % Fem el senyal 32
 load('./DIAL_data/N32.MAT')
 
@@ -110,12 +117,13 @@ grid on
 xlabel("x")
 ylabel("y")
 title("Senyal")
-print('./eps/dibuixSenyal','-depsc','-tiff')
+print('./eps/dibuixSenyal','-dpdf', '-bestfit')
 
 
 % Quina és la duració del senyal:
 fs=8e3; Ts=1/fs;
 L=length(x);
+N = L;
 display(L,'la llargada de x és')
 display(L,'La duració del senyal en número de mostres és')
 display(Ts*L,'La duració del senyal en segons és')
@@ -126,26 +134,28 @@ play(player);
 
 
 % DFT i dibuix del mòdul:
-N=2^8;
-X=fft(x,N);
+
+X=fft(x);
 figure(8)
 plot(abs(X))
 grid on
-print('./eps/dft','-depsc','-tiff')
-
+print('./eps/dft','-depsc', '-tiff')
 
 % Trobi els índexs (valors de k) per a cadascun dels 4 pics de la DFT.
 Mod=abs(X);
 [values,loc]=sort(Mod);
 klist=[values(end-3) values(end-2) values(end-1) values(end)];
-valorspics=[loc(end-3) loc(end-2) loc(end-1) loc(end)];
+locationPics=[loc(end-3) loc(end-2) loc(end-1) loc(end)];
 
 % Obtingui les freqüències digitals corresponents als dos pics detectats
-Omega1=2*(pi/N)*klist(1);
-Omega2=2*(pi/N)*klist(3);
+Omega1=2*(pi/N)*locationPics(1);
+Omega2=2*(pi/N)*locationPics(3);
 
+discreteOmegas= 2*(pi/N).*locationPics;
 % Quines són les freqüències analògiques (en Hz) corresponents a les freqüències
 % digitals anteriors?
+analogOmegas = discreteOmegas.*fs;
+analogFreqs = analogOmegas./(2*pi);
 
 w1=Omega1*fs;
 w2=Omega2*fs;
@@ -154,6 +164,128 @@ f1=w1/(2*pi);
 f2=w2/(2*pi);
 
 % Quina és la tecla corresponent al senyal x utilitzant la Figura 1?
+
+%Tallem la senyal:
+onTallar1 = 3/4*L;
+onTallar2 = 1/2*L;
+
+senyal1 = x([1:onTallar1]);
+senyal2 = x([1:onTallar2]);
+
+dft1 = fft(senyal1, N);
+dft2 = fft(senyal2, N);
+
+figure()
+plot(abs(dft1))
+xlabel('k')
+title('DFT de 3/4 del senyal')
+grid on
+print('./eps/dft1','-depsc', '-tiff')
+
+figure()
+plot(abs(dft2))
+xlabel('k')
+title('DFT de 1/2 del senyal')
+grid on
+print('./eps/dft2','-depsc', '-tiff')
+
+zeroPad=fft(x, 2^16);
+figure()
+stem(abs(zeroPad), 'Marker', 'none')
+grid on
+
+%% Ultim apartat 2.3.3
+close all;
+N = 1024;
+n = [1:N];
+hamm = hamming(N);
+hammingWindowing = hamm'.*x;
+
+figure()
+stem(hamm);
+xlabel('n');
+ylabel('w[n]')
+title('Hamming windowing mida N');
+print('./eps/hamming','-depsc', '-tiff')
+
+figure();
+stem(hammingWindowing);
+xlabel('n');
+ylabel('x[n]')
+title('Hamming windowing mida N aplicat a la senyal.');
+print('./eps/hammingSignal','-depsc', '-tiff')
+
+frecuencyDomainBartlett = fft(hamm);
+figure()
+stem(20*abs(frecuencyDomainBartlett), 'Marker', 'none')
+set(gca,'yscal','log')
+%semilogy(n, abs(frecuencyDomainBartlett))
+ylabel('dB');
+xlabel('k');
+title('Fft Hamming');
+print('./eps/hammingFreq','-depsc', '-tiff')
+% Per veure-ho millor:
+frecuencyDomainBartlett = fft(hamm, 2^16);
+figure()
+%stem(20*abs(frecuencyDomainBartlett), 'Marker', 'none')
+%set(gca,'yscal','log')
+semilogy([1:1:2^16], 20*abs(frecuencyDomainBartlett))
+ylabel('dB');
+xlabel('k');
+title('Fft Hamming');
+print('./eps/hammingFreqP','-depsc', '-tiff')
+
+barletFft = fft(hammingWindowing);
+figure;
+stem(abs(barletFft), 'Marker', 'none');
+xlabel('k');
+title('FFT de windowed signal amb Hamming de N');
+print('./eps/hammingSignalFFt','-depsc', '-tiff');
+
+% Ara amb bartlett
+hamm = bartlett(N);
+hammingWindowing = hamm'.*x;
+
+figure()
+stem(hamm);
+xlabel('n');
+ylabel('w[n]')
+title('Bartlett windowing mida N');
+print('./eps/bartlett','-depsc', '-tiff')
+
+figure();
+stem(hammingWindowing);
+xlabel('n');
+ylabel('x[n]')
+title('Bartlett windowing mida N aplicat a la senyal.');
+print('./eps/bartlettSignal','-depsc', '-tiff')
+
+frecuencyDomainBartlett = fft(hamm);
+figure()
+stem(20*abs(frecuencyDomainBartlett), 'Marker', 'none')
+set(gca,'yscal','log')
+%semilogy(n, abs(frecuencyDomainBartlett))
+ylabel('dB');
+xlabel('k');
+title('Fft Bartlett');
+print('./eps/bartlettFreq','-depsc', '-tiff')
+% Per veure-ho millor:
+frecuencyDomainBartlett = fft(hamm, 2^16);
+figure()
+%stem(20*abs(frecuencyDomainBartlett), 'Marker', 'none')
+%set(gca,'yscal','log')
+semilogy([1:1:2^16], 20*abs(frecuencyDomainBartlett))
+ylabel('dB');
+xlabel('k');
+title('Fft bartlett');
+print('./eps/bartlettFreqP','-depsc', '-tiff')
+
+barletFft = fft(hammingWindowing);
+figure;
+stem(abs(barletFft), 'Marker', 'none');
+xlabel('k');
+title('FFT de windowed signal amb Bartlett de N');
+print('./eps/bartlettSignalFFt','-depsc', '-tiff');
 
 
 
@@ -219,6 +351,18 @@ y((P-1)*M+1:end) = temp;
 end
 
 
+function y=cosDFT(k,k0, N, phi)
+    if (k == k0) 
+        y = (N/2)*exp(1i*phi);
+    elseif (k == (N - k0))
+        y = (N/2)*exp(-1i*phi);
+    else
+        y = 0;
+    end
+end
 
 
+function v = berlettWindowing(n,N)
+    v = (N-1)/2 - abs(n-(N-1)./2);
+end
 
