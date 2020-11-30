@@ -288,6 +288,91 @@ title('FFT de windowed signal amb Bartlett de N');
 print('./eps/bartlettSignalFFt','-depsc', '-tiff');
 
 
+%Ara partint la senyal fins a 1/4:
+
+N = 256;
+XX = x(1:256);
+n = [1:N];
+hamm = hamming(N);
+hammingWindowing = hamm'.*XX;
+
+figure()
+stem(hamm);
+xlabel('n');
+ylabel('w[n]')
+title('Hamming windowing mida N');
+
+figure();
+stem(hammingWindowing);
+xlabel('n');
+ylabel('x[n]')
+title('Hamming windowing mida N aplicat a la senyal.');
+
+frecuencyDomainBartlett = fft(hamm);
+figure()
+stem(20*abs(frecuencyDomainBartlett), 'Marker', 'none')
+set(gca,'yscal','log')
+%semilogy(n, abs(frecuencyDomainBartlett))
+ylabel('dB');
+xlabel('k');
+title('Fft Hamming');
+% Per veure-ho millor:
+frecuencyDomainBartlett = fft(hamm, 2^16);
+figure()
+%stem(20*abs(frecuencyDomainBartlett), 'Marker', 'none')
+%set(gca,'yscal','log')
+semilogy([1:1:2^16], 20*abs(frecuencyDomainBartlett))
+ylabel('dB');
+xlabel('k');
+title('Fft Hamming');
+
+barletFft = fft(hammingWindowing);
+figure;
+stem(abs(barletFft), 'Marker', 'none');
+xlabel('k');
+title('FFT de windowed signal amb Hamming de N');
+print('./eps/hammingSignalFFtW','-depsc', '-tiff');
+
+% Ara amb bartlett
+hamm = bartlett(N);
+hammingWindowing = hamm'.*XX;
+
+figure()
+stem(hamm);
+xlabel('n');
+ylabel('w[n]')
+title('Bartlett windowing mida N');
+
+figure();
+stem(hammingWindowing);
+xlabel('n');
+ylabel('x[n]')
+title('Bartlett windowing mida N aplicat a la senyal.');
+
+frecuencyDomainBartlett = fft(hamm);
+figure()
+stem(20*abs(frecuencyDomainBartlett), 'Marker', 'none')
+set(gca,'yscal','log')
+%semilogy(n, abs(frecuencyDomainBartlett))
+ylabel('dB');
+xlabel('k');
+title('Fft Bartlett');
+% Per veure-ho millor:
+frecuencyDomainBartlett = fft(hamm, 2^16);
+figure()
+%stem(20*abs(frecuencyDomainBartlett), 'Marker', 'none')
+%set(gca,'yscal','log')
+semilogy([1:1:2^16], 20*abs(frecuencyDomainBartlett))
+ylabel('dB');
+xlabel('k');
+title('Fft bartlett');
+
+barletFft = fft(hammingWindowing);
+figure;
+stem(abs(barletFft), 'Marker', 'none');
+xlabel('k');
+title('FFT de windowed signal amb Bartlett de N');
+print('./eps/bartlettSignalFFtWW','-depsc', '-tiff');
 
 %%
 
